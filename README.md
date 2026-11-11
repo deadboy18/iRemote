@@ -187,6 +187,11 @@ iRemote/
 - [Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) — Flipper Zero IR database
 - [probonopd/irdb](https://github.com/probonopd/irdb) — Community IR database
 
+## Credits
+
+- **Dongle SVGs** by [@flatsiedatsie](https://github.com/flatsiedatsie) — [createcandle/infrared](https://github.com/createcandle/infrared/tree/main/images)
+- **Candle Smart Home IR Addon** by [@flatsiedatsie](https://github.com/flatsiedatsie) — [createcandle/infrared](https://github.com/createcandle/infrared)
+
 ## License
 
 MIT
