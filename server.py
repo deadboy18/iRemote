@@ -157,14 +157,17 @@ def checksum62(buf):
     return mangle_byte((s & 0xF0) | ((s >> 8) & 0x0F))
 
 def compress_value(v):
-    if v <= 1: return [v]
-    sv = int(v / 16.0 + 0.5); out = []
+    if v <= 2032:
+        q = v if v in (0, 1) else int(v / 16.0 + 0.5)
+        return [q & 0xFF]
+    out = []
+    x = v
     while True:
-        b = sv & 0x7F; sv >>= 7
-        if sv: b |= 0x80
+        b = x & 0x7F; x >>= 7
+        if x: b |= 0x80
         if (b & 0xFF) == 0xFF: b = 0xFE
         out.append(b & 0xFF)
-        if not sv: break
+        if not x: break
     return out
 
 def compress_pulses(pat):
