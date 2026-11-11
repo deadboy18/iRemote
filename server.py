@@ -16,20 +16,26 @@ try:
     from flask import Flask, send_from_directory, send_file
     from flask_socketio import SocketIO, emit
 except ImportError:
-    print("ERROR: pip install flask flask-socketio"); sys.exit(1)
+    print("ERROR: Missing Python web packages. Run: pip install flask flask-socketio")
+    sys.exit(1)
 
-usb_available = False
+try:
+    import usb.core, usb.util, usb.backend.libusb1
+except ImportError:
+    print("ERROR: Missing Python USB packages. Run: pip install pyusb libusb-package")
+    sys.exit(1)
+
 usb_backend = None
 try:
-    import usb.core, usb.util
-    try:
-        import libusb_package; usb_backend = libusb_package.get_libusb1_backend()
-        print("[OK] libusb-package backend")
-    except ImportError:
-        print("[OK] system libusb")
-    usb_available = True
+    import libusb_package; usb_backend = libusb_package.get_libusb1_backend()
 except ImportError:
-    print("ERROR: pip install pyusb libusb-package")
+    pass
+if usb_backend is None:
+    usb_backend = usb.backend.libusb1.get_backend()
+if usb_backend is None:
+    print("ERROR: libusb not found. Run: brew install libusb (macOS) or apt install libusb-1.0-0 (Linux)")
+    sys.exit(1)
+print("[OK] USB ready")
 
 app = Flask(__name__, static_folder='.')
 app.config['SECRET_KEY'] = 'iremote'
@@ -279,7 +285,6 @@ def parse_learn(raw):
 
 # ═══════════════════════════════════════════════════
 def list_usb_devices():
-    if not usb_available: return []
     devices = []
     try:
         for dev in usb.core.find(find_all=True, backend=usb_backend):
@@ -303,7 +308,7 @@ def serve_static(filename): return send_from_directory('.', filename)
 @socketio.on('connect')
 def on_connect():
     emit('status', {'connected': connected_device is not None, 'type': device_type,
-                    'variant': ocrustar_variant, 'usb_available': usb_available})
+                    'variant': ocrustar_variant})
 
 @socketio.on('list_usb')
 def on_list_usb():
@@ -315,7 +320,6 @@ def on_list_usb():
 @socketio.on('connect_tiqiaa')
 def on_connect_tiqiaa():
     global connected_device, device_type, tiq_cmd_id, tiq_pkt_idx
-    if not usb_available: emit('error', {'msg': 'pyusb not installed'}); return
     with device_lock:
         dev = usb.core.find(idVendor=TIQ_VID, idProduct=TIQ_PID, backend=usb_backend)
         if not dev:
@@ -372,7 +376,6 @@ def on_connect_tiqiaa():
 def on_connect_ocrustar():
     """Mirrors elksmart_v15.py Dev.connect() + Dev.handshake() exactly."""
     global connected_device, device_type, ocrustar_variant, ep_in, ep_out
-    if not usb_available: emit('error', {'msg': 'pyusb not installed'}); return
     with device_lock:
         dev = None; found_pid = None
         for pid in OCRU_PIDS:
@@ -573,15 +576,13 @@ if __name__ == '__main__':
     print("="*52)
     print("  iRemote Server — USB IR Blaster Backend")
     print("="*52)
-    print(f"  pyusb: {'OK' if usb_available else 'NOT INSTALLED'}")
-    if usb_available:
-        devs = list_usb_devices()
-        if devs:
-            print(f"  {len(devs)} USB devices:")
-            for d in devs:
-                m = ''
-                if d['vid']==f'0x{OCRU_VID:04X}': m=' ← OCRUSTAR'
-                if d['vid']==f'0x{TIQ_VID:04X}' and d['pid']==f'0x{TIQ_PID:04X}': m=' ← TIQIAA'
-                print(f"    {d['vid']}:{d['pid']} — {d['product']}{m}")
+    devs = list_usb_devices()
+    if devs:
+        print(f"  {len(devs)} USB devices:")
+        for d in devs:
+            m = ''
+            if d['vid']==f'0x{OCRU_VID:04X}': m=' ← OCRUSTAR'
+            if d['vid']==f'0x{TIQ_VID:04X}' and d['pid']==f'0x{TIQ_PID:04X}': m=' ← TIQIAA'
+            print(f"    {d['vid']}:{d['pid']} — {d['product']}{m}")
     print(f"\n  http://localhost:7890\n{'='*52}")
     socketio.run(app, host='0.0.0.0', port=7890, debug=False, allow_unsafe_werkzeug=True)

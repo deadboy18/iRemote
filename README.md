@@ -31,61 +31,58 @@
 **iRemote** is a web-based universal IR blaster interface powered by a Python backend. Plug in a USB IR blaster, run the server, and control any infrared device from any browser — no WebUSB or special browser extensions required.
 
 Works with cheap USB IR blasters you can find on AliExpress for $3–8:
+
 - **Tiqiaa** (uses the ZaZa Remote app on mobile)
 - **Ocrustar / ElkSmart** (uses the Smart IR Blaster app on mobile)
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| 🎮 **Universal Remote** | TV remote with multi-blast (Samsung + LG + Sony + Philips simultaneously) |
-| 🏨 **Hotel TV Toolkit** | Pre-built macros for hotel/hospitality TV menus — Samsung, LG, Sony, Philips |
+| Feature                    | Description                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 🎮 **Universal Remote**    | TV remote with multi-blast (Samsung + LG + Sony + Philips simultaneously)                                                            |
+| 🏨 **Hotel TV Toolkit**    | Pre-built macros for hotel/hospitality TV menus — Samsung, LG, Sony, Philips                                                         |
 | 📚 **IR Database Browser** | Browse 300,000+ IR codes from [Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) and [irdb](https://github.com/probonopd/irdb) |
-| 📂 **File Import** | Flipper Zero `.ir`, IRDB `.csv`, Pronto hex, raw pulse data, iRemote Android `.json` |
-| 🔴 **IR Learning** | Capture signals from physical remotes (point and press) |
-| ⚡ **Batch Learn** | Pre-define button names, learn them one-by-one — fast full remote capture |
-| ❄️ **AC / Fan Remotes** | Temperature control, mode switching, fan speed |
-| 📡 **Protocol Sender** | Manual NEC / Samsung32 / RC5 / Sony SIRC with hex address + command |
-| 💾 **Saved Remotes** | Persist custom remotes, export/import as JSON |
-| 🔧 **Custom Macros** | Build your own IR button sequences with delays |
-| 📋 **Full Logging** | See every USB frame, protocol encode, and device response |
+| 📂 **File Import**         | Flipper Zero `.ir`, IRDB `.csv`, Pronto hex, raw pulse data, iRemote Android `.json`                                                 |
+| 🔴 **IR Learning**         | Capture signals from physical remotes (point and press)                                                                              |
+| ⚡ **Batch Learn**         | Pre-define button names, learn them one-by-one — fast full remote capture                                                            |
+| ❄️ **AC / Fan Remotes**    | Temperature control, mode switching, fan speed                                                                                       |
+| 📡 **Protocol Sender**     | Manual NEC / Samsung32 / RC5 / Sony SIRC with hex address + command                                                                  |
+| 💾 **Saved Remotes**       | Persist custom remotes, export/import as JSON                                                                                        |
+| 🔧 **Custom Macros**       | Build your own IR button sequences with delays                                                                                       |
+| 📋 **Full Logging**        | See every USB frame, protocol encode, and device response                                                                            |
 
 ## Supported Devices
 
-| Device | VID:PID | Interface | Buy |
-|--------|---------|-----------|-----|
-| **Tiqiaa** | `10C4:8468` | pyusb (bulk transfers) | [AliExpress](https://www.aliexpress.com/w/wholesale-tiqiaa-ir-blaster.html) ~$5 |
-| **Ocrustar / ElkSmart** | `045C:02AA` + 10 others | pyusb (libusb) | [AliExpress](https://www.aliexpress.com/w/wholesale-usb-ir-blaster.html) ~$3 |
+| Device                  | VID:PID                 | Interface              | Buy                                                                             |
+| ----------------------- | ----------------------- | ---------------------- | ------------------------------------------------------------------------------- |
+| **Tiqiaa**              | `10C4:8468`             | pyusb (bulk transfers) | [AliExpress](https://www.aliexpress.com/w/wholesale-tiqiaa-ir-blaster.html) ~$5 |
+| **Ocrustar / ElkSmart** | `045C:02AA` + 10 others | pyusb (libusb)         | [AliExpress](https://www.aliexpress.com/w/wholesale-usb-ir-blaster.html) ~$3    |
 
 Both devices support **transmit and receive** (learn mode).
 
 ## Quick Start
 
 ```bash
-# 1. Clone
 git clone https://github.com/deadboy18/iRemote.git
 cd iRemote
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. Run
 python server.py
-
-# 4. Open any browser
-#    http://localhost:7890
 ```
 
-### Windows Extra Step
+Then open **http://localhost:7890** in any browser.
 
-For **Ocrustar**: install [Zadig](https://zadig.akeo.ie/), select your device (`SMART`), and replace the driver with **WinUSB**.
+### Platform notes
 
-For **Tiqiaa**: also needs WinUSB via Zadig (despite being HID — it uses bulk transfers internally).
-
-### Linux
+**macOS** — install libusb:
 
 ```bash
-# Allow non-root USB access
+brew install libusb
+```
+
+**Linux** — install libusb and grant USB access:
+
+```bash
+sudo apt install libusb-1.0-0 # if not installed
 sudo cp 99-irblaster.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 ```
@@ -99,16 +96,19 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="10c4", ATTR{idProduct}=="8468", MODE="0666"
 # Ocrustar
 SUBSYSTEM=="usb", ATTR{idVendor}=="045c", MODE="0666"
 ```
+
 </details>
+
+**Windows** — install [Zadig](https://zadig.akeo.ie/), select your device, and replace the driver with **WinUSB** (required for both Ocrustar and Tiqiaa).
 
 ## Screenshots
 
-| Remote | Hotel TV | IR Database |
-|--------|----------|-------------|
+| Remote                            | Hotel TV                                | IR Database                                   |
+| --------------------------------- | --------------------------------------- | --------------------------------------------- |
 | ![Remote](screenshots/Remote.png) | ![Hotel TV](screenshots/Hotel%20Tv.png) | ![IR Database](screenshots/IR%20Database.png) |
 
-| File Import | Learn Mode | Log |
-|-------------|------------|-----|
+| File Import                                   | Learn Mode                                  | Log                         |
+| --------------------------------------------- | ------------------------------------------- | --------------------------- |
 | ![File Import](screenshots/File%20Import.png) | ![Learn Mode](screenshots/Learn%20Mode.png) | ![Log](screenshots/Log.png) |
 
 ## How It Works
@@ -140,25 +140,25 @@ The UI is hosted on [GitHub Pages](https://deadboy18.github.io/iRemote/) so you 
 
 Built-in sequences for accessing hospitality TV service menus:
 
-| Brand | Macros |
-|-------|--------|
-| **Samsung** | Hotel Menu, Hotel Menu (Alt), Smart Remote Unlock, Service Menu, Factory Service, PIN Reset |
-| **LG** | Installer Menu (9876), Installer Menu (1105), Service Menu |
-| **Philips** | Hotel Mode (BDS), Service Menu (SAM) |
-| **Sony** | Service Menu |
-| **Universal** | Power Off All (6 brands at once) |
+| Brand         | Macros                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| **Samsung**   | Hotel Menu, Hotel Menu (Alt), Smart Remote Unlock, Service Menu, Factory Service, PIN Reset |
+| **LG**        | Installer Menu (9876), Installer Menu (1105), Service Menu                                  |
+| **Philips**   | Hotel Mode (BDS), Service Menu (SAM)                                                        |
+| **Sony**      | Service Menu                                                                                |
+| **Universal** | Power Off All (6 brands at once)                                                            |
 
 You can also build and save custom macros with the macro builder.
 
 ## File Format Support
 
-| Format | Source | Extension |
-|--------|--------|-----------|
-| Flipper Zero IR | [Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) | `.ir` |
-| IRDB CSV | [probonopd/irdb](https://github.com/probonopd/irdb) | `.csv` |
-| iRemote Android JSON | iRemote Android app | `.json` |
-| Pronto Hex | Various | `.txt` |
-| Raw Pulse Data | Any | `.txt` |
+| Format               | Source                                                   | Extension |
+| -------------------- | -------------------------------------------------------- | --------- |
+| Flipper Zero IR      | [Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) | `.ir`     |
+| IRDB CSV             | [probonopd/irdb](https://github.com/probonopd/irdb)      | `.csv`    |
+| iRemote Android JSON | iRemote Android app                                      | `.json`   |
+| Pronto Hex           | Various                                                  | `.txt`    |
+| Raw Pulse Data       | Any                                                      | `.txt`    |
 
 ## Dependencies
 
